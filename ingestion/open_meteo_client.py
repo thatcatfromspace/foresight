@@ -4,19 +4,18 @@ from openmeteopy.daily import DailyHistorical
 from openmeteopy.options import HistoricalOptions
 
 class OpenMeteoClient:
-    """
-    OpenMeteoClient class to get weather data from OpenMeteo API. Hourly and daily parameters
-    must be explicitly configured before fetching data from the API else only metadata will be received. 
-    Sample usage included in the class definition.
-
-    Args:
-        latitude (float): Latitude of the location.
-        longitude (float): Longitude of the location.
-        start_date (str): Start date in YYYY-MM-DD format.
-        end_date (str): End date in YYYY-MM-DD format.
-    """
-
     def __init__(self, latitude: float, longitude: float, start_date: str, end_date: str) -> None:
+        """
+        OpenMeteoClient class to get weather data from OpenMeteo API. Hourly and daily parameters
+        must be explicitly configured before fetching data from the API else only metadata will be received. 
+        Sample usage included in the class definition.
+
+        Args:
+            latitude (float): Latitude of the location.
+            longitude (float): Longitude of the location.
+            start_date (str): Start date in YYYY-MM-DD format.
+            end_date (str): End date in YYYY-MM-DD format.
+        """
         self.hourly = HourlyHistorical()
         self.daily = DailyHistorical()
         self.options = HistoricalOptions(latitude=latitude, longitude=longitude, start_date=start_date, end_date=end_date)

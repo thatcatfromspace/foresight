@@ -1,8 +1,10 @@
 from kafka import KafkaProducer
+from ingestion.open_meteo_client import OpenMeteoClient  
 import json
 from openmeteopy.hourly import HourlyHistorical
 from openmeteopy.daily import DailyHistorical
-from open_meteo_client import OpenMeteoClient  
+import os
+import logging
 
 class WeatherDataProducer:
     def __init__(self, kafka_broker: str, hourly_topic: str, daily_topic: str):
@@ -44,6 +46,8 @@ class WeatherDataProducer:
                 .temperature_2m_max()
                 .temperature_2m_min()
                 .precipitation_sum()
+                .sunrise()
+                .sunset()
             )
 
             client.config_hourly_params(
@@ -61,7 +65,7 @@ class WeatherDataProducer:
 
             hourly_time = weather_data.get('hourly', {}).get('time', [])
             if not hourly_time:
-                print("No hourly data available.")
+                logging.info("No hourly data available.")
             else:
                 batch_size = 24  # Send hourly data in batches of 24 hours 
                 hourly_data_batch = []
@@ -90,34 +94,35 @@ class WeatherDataProducer:
             # Handle daily data separately because only one entry is available per day
             daily_time = weather_data.get('daily', {}).get('time', [])
             if not daily_time:
-                print("No daily data available.")
+                logging.info("No daily data available.")
             else:
                 for idx, date in enumerate(daily_time):
                     daily_data = {
-                        'date': date,
+                        'sunrise': weather_data['daily']['sunrise'][idx],
+                        'sunset': weather_data['daily']['sunset'][idx],
                         'temperature_2m_max': weather_data['daily']['temperature_2m_max'][idx],
                         'temperature_2m_min': weather_data['daily']['temperature_2m_min'][idx],
                         'precipitation_sum': weather_data['daily']['precipitation_sum'][idx]
                     }
                     self.producer.send(self.daily_topic, key=date, value=daily_data)
 
-            print("Weather data successfully sent to Kafka.")
+            logging.info("Weather data successfully sent to Kafka.")
         except Exception as e:
-            print(f"Error: {e}")
+            logging.error(f"Error in kafka_producer.py: {e}")
 
     def close(self):
         """Close the Kafka producer."""
         self.producer.close()
 
 if __name__ == "__main__":
-    kafka_broker = "localhost:9092" 
-    hourly_topic = "hourly_weather_data"
-    daily_topic = "daily_weather_data"
+    kafka_broker = os.getenv("KAFKA_BROKER") 
+    hourly_topic = os.getenv("KAFKA_HOURLY_TOPIC")
+    daily_topic = os.getenv("KAFKA_DAILY_TOPIC")
 
     latitude = 37.7749  
     longitude = -122.4194
     start_date = "2022-01-01"
-    end_date = "2022-01-02"
+    end_date = "2022-01-07"
 
     producer = WeatherDataProducer(kafka_broker, hourly_topic, daily_topic)
     producer.send_weather_data(latitude, longitude, start_date, end_date)
