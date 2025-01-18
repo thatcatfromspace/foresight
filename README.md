@@ -1,10 +1,21 @@
 ## ForeSight
 
+"Sooooo... The weather?"
+
 A full-fledged big data model to predict and analyze temperatures.
 
 ## Installing and running 
 
 We need `Kafka` to process data and `Cassandra` as the database. Both of them are installed locally using `Docker`. 
+
+To run a local Kafka server, make sure you have Docker installed, and then run the command.
+
+```bash
+cd kafka
+docker compose up -d
+```
+
+This will create a network running Zookeeper and Kafka with the required topics: `hourly_weather_data` and `daily_weather_data`.
 
 To run the Python application, first create a `venv`.
 
