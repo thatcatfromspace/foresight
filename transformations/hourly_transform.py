@@ -67,9 +67,7 @@ df = trans.add_rolling_mean(features_to_rolling_mean, window=6)
 # rolling_features_to_normalize = ['relativehumidity_2m_rolling_6h', 'cloudcover_rolling_6h', 'precipitation_rolling_6h_log']
 # df = trans.normalize_data(rolling_features_to_normalize)
 
-print(df)
-
-df.to_csv('/Users/noorfathima/Documents/college/code/weather/final_transformed_data.csv', index=False)
+df.to_json('/Users/noorfathima/Documents/college/project/foresight/transformations/hourly_transformed.json', orient="records", lines=True, indent=4)
 
 
 
