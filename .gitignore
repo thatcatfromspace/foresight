@@ -5,3 +5,5 @@ __pycache__/
 ingestion/__pycache__/
 
 app.log
+
+.DS_Store
