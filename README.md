@@ -43,3 +43,9 @@ Install the requirements.
 pip install -r requirements.txt
 ```
 
+
+NOTE: `openmeteopy` is not available on PyPI yet. It must be installed from GitHub using the following command: 
+
+```sh
+pip install git+https://github.com/m0rp43us/openmeteopy
+```
