@@ -1,11 +1,13 @@
 services:
   zookeeper:
     image: wurstmeister/zookeeper:latest
+    container_name: zookeeper
     ports:
       - "2181:2181"
 
   kafka:
     image: wurstmeister/kafka:latest
+    container_name: kafka
     ports:
       - "9092:9092"
     expose:
@@ -19,3 +21,23 @@ services:
       KAFKA_CREATE_TOPICS: "hourly_weather_data:5:1,daily_weather_data:3:1"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+
+  cassandra:
+    image: cassandra:latest
+    container_name: cassandra
+    ports:
+      - "9042:9042" 
+    volumes:
+      - cassandra_data:/var/lib/cassandra
+    environment:
+      CASSANDRA_CLUSTER_NAME: "ForeSight"
+      CASSANDRA_KEYSPACE: "foresight_keyspace"
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  cassandra_data: 

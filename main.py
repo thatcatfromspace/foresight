@@ -1,11 +1,12 @@
 from dotenv import load_dotenv
 from ingestion.kafka_producer import WeatherDataProducer
 from ingestion.kafka_consumer import WeatherDataConsumer
+from storage.cassandra_client import CassandraClient
 import os
 import threading
 import logging
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S", handlers=[logging.FileHandler("app.log"), logging.StreamHandler()])
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S", handlers=[logging.FileHandler("logs/app.log"), logging.StreamHandler()])
 
 load_dotenv()
 
@@ -18,10 +19,10 @@ def run_producer():
     Initializes and runs the Kafka producer to send weather data.
     """
 
-    latitude = 37.7749  
-    longitude = -122.4194
-    start_date = "2022-01-01"
-    end_date = "2022-01-07"
+    latitude = os.getenv("LATITUDE")
+    longitude = os.getenv("LONGITUDE")
+    start_date = os.getenv("START_DATE")
+    end_date = os.getenv("END_DATE")
 
     producer = WeatherDataProducer(kafka_broker, hourly_topic, daily_topic)
     producer.send_weather_data(latitude, longitude, start_date, end_date)
@@ -42,7 +43,7 @@ def run_consumer():
     logging.info("Consumer has finished processing data.")
 
 if __name__ == "__main__":
-    
+    # Kafka broker
     producer_thread = threading.Thread(target=run_producer, name="ProducerThread")
     consumer_thread = threading.Thread(target=run_consumer, name="ConsumerThread", daemon=True)
 
@@ -51,3 +52,11 @@ if __name__ == "__main__":
 
     producer_thread.join()
     consumer_thread.join()
+
+    # Insert into database 
+    contact_points = [os.getenv("CASSANDRA_HOST", "localhost")]  
+    port = int(os.getenv("CASSANDRA_PORT", 9042))
+    username = os.getenv("CASSANDRA_USERNAME", "cassandra")
+    password = os.getenv("CASSANDRA_PASSWORD", "cassandra")
+    keyspace = os.getenv("CASSANDRA_KEYSPACE", "foresight_keyspace")
+    cassandra_client = CassandraClient(contact_points, port, username, password, keyspace)
