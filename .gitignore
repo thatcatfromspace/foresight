@@ -3,6 +3,8 @@ venv/
 
 __pycache__/
 ingestion/__pycache__/
+storage/__pycache__/
+transformations/__pycache__/
 
 app.log
 

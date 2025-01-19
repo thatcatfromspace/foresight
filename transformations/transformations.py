@@ -1,5 +1,3 @@
-import pandas as pd
-import json
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
@@ -111,7 +109,7 @@ class Transformation:
         """
         for feature in features:
             self.df[f'{feature}_rolling_{window}h'] = self.df[feature].rolling(window=window).mean()
-            self.df[f'{feature}_rolling_{window}h'].fillna(method='bfill', inplace=True)
+            self.df[f'{feature}_rolling_{window}h'] = self.df[f'{feature}_rolling_{window}h'].bfill()
 
         return self.df
 

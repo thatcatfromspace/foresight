@@ -1,12 +1,15 @@
-from dotenv import load_dotenv
 from ingestion.kafka_producer import WeatherDataProducer
 from ingestion.kafka_consumer import WeatherDataConsumer
 from storage.cassandra_client import CassandraClient
+from transformations.daily_transform import DailyTransform
+from transformations.hourly_transform import HourlyTransform
+
+from dotenv import load_dotenv
 import os
 import threading
 import logging
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S", handlers=[logging.FileHandler("logs/app.log"), logging.StreamHandler()])
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S", handlers=[logging.FileHandler("app.log"), logging.StreamHandler()])
 
 load_dotenv()
 
@@ -19,8 +22,8 @@ def run_producer():
     Initializes and runs the Kafka producer to send weather data.
     """
 
-    latitude = os.getenv("LATITUDE")
-    longitude = os.getenv("LONGITUDE")
+    latitude = float(os.getenv("LATITUDE"))
+    longitude = float(os.getenv("LONGITUDE"))
     start_date = os.getenv("START_DATE")
     end_date = os.getenv("END_DATE")
 
@@ -60,3 +63,15 @@ if __name__ == "__main__":
     password = os.getenv("CASSANDRA_PASSWORD", "cassandra")
     keyspace = os.getenv("CASSANDRA_KEYSPACE", "foresight_keyspace")
     cassandra_client = CassandraClient(contact_points, port, username, password, keyspace)
+
+    daily_transform = DailyTransform('daily_weather_data.json')
+    daily_data = daily_transform.daily_transformed_data()
+    
+    hourly_transform = HourlyTransform('hourly_weather_data.json')
+    hourly_data = hourly_transform.hourly_transformed_data()
+
+    for record in daily_data:
+        cassandra_client.insert_daily_data('daily_weather_data', record)
+
+    for record in hourly_data:
+        cassandra_client.insert_hourly_data('hourly_weather_data', record)

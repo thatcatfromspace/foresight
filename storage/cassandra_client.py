@@ -2,6 +2,7 @@ import os
 from cassandra.cluster import Cluster
 from cassandra.auth import PlainTextAuthProvider
 from cassandra.query import SimpleStatement
+from cassandra.policies import DCAwareRoundRobinPolicy
 import logging
 import json
 
@@ -21,13 +22,15 @@ class CassandraClient:
         self.keyspace = keyspace
         
         auth_provider = PlainTextAuthProvider(username, password) if username and password else None
-        self.cluster = Cluster(contact_points, port=port, auth_provider=auth_provider)
+        self.cluster = Cluster(contact_points, port=port, auth_provider=auth_provider, load_balancing_policy=DCAwareRoundRobinPolicy(local_dc='datacenter1'))
         self.session = self.cluster.connect()
         
         self.schema_path = os.getenv("CASSANDRA_SCHEMA", "schema.cql") 
         
         self.session.execute("CREATE KEYSPACE IF NOT EXISTS foresight_keyspace WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1}")  
         self.session.set_keyspace(keyspace)
+
+        self.execute_schema(os.getenv("CASSANDRA_SCHEMA", "schema.cql"))
 
     def execute_schema(self, schema_path):
         """
@@ -58,7 +61,21 @@ class CassandraClient:
         try:
             query = f"INSERT INTO {table} JSON %s"
             self.session.execute(query, (json.dumps(data),))
-            logging.info(f"Inserted data into {table}: {data}")
+        except Exception as e:
+            logging.error(f"Error inserting data: {e}")
+            
+
+    def insert_daily_data(self, table, data):
+        """
+        Insert daily weather data into a table.
+
+        Args:
+            table (str): Table name.
+            data (dict): Dictionary containing the data to insert.
+        """
+        try:
+            query = f"INSERT INTO {table} JSON %s"
+            self.session.execute(query, (json.dumps(data),))
         except Exception as e:
             logging.error(f"Error inserting data: {e}")
 
