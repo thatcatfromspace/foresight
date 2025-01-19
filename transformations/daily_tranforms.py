@@ -50,6 +50,4 @@ columns_to_lag = ['temperature_2m_max', 'temperature_2m_min', 'precipitation_sum
 lag_day = [1, 3]
 df = trans.add_lag_features(columns_to_lag, lag_day,'date')
 
-print(df)
-
-df.to_csv('/Users/noorfathima/Documents/college/code/weather/final_daily_transformed_data.csv', index=False)
+df.to_json('/Users/noorfathima/Documents/college/project/foresight/transformations/daily_transformed.json', orient="records", lines=True, indent=4)
