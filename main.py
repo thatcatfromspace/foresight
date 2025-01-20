@@ -75,3 +75,9 @@ if __name__ == "__main__":
 
     for record in hourly_data:
         cassandra_client.insert_hourly_data('hourly_weather_data', record)
+
+    hourly_records = cassandra_client.retrieve_data('hourly_weather_data')
+
+    daily_records = cassandra_client.retrieve_data('daily_weather_data')
+
+    cassandra_client.close()

@@ -30,7 +30,7 @@ class CassandraClient:
         self.session.execute("CREATE KEYSPACE IF NOT EXISTS foresight_keyspace WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1}")  
         self.session.set_keyspace(keyspace)
 
-        self.execute_schema(os.getenv("CASSANDRA_SCHEMA", "schema.cql"))
+        self.execute_schema(self.schema_path)
 
     def execute_schema(self, schema_path):
         """
@@ -91,9 +91,11 @@ class CassandraClient:
             list: Retrieved rows.
         """
         try:
-            query = f"SELECT * FROM {table} LIMIT {limit}"
+            query = f"SELECT JSON * FROM {table} LIMIT {limit}"
             rows = self.session.execute(query)
-            return [row for row in rows]
+            json_rows = [json.loads(row.json) for row in rows]
+            return json.dumps(json_rows, indent=2)
+        
         except Exception as e:
             logging.error(f"Error retrieving data: {e}")
             return []

@@ -9,3 +9,8 @@ transformations/__pycache__/
 app.log
 
 .DS_Store
+
+# Sample datasets
+
+hourly_weather_data.json
+daily_weather_data.json
