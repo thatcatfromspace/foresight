@@ -90,14 +90,15 @@ class WeatherDataConsumer:
         """Close the Kafka consumer."""
         self.consumer.close()
 
-if __name__ == "__main__":
-    kafka_broker = os.getenv("KAFKA_BROKER") 
-    hourly_topic = os.getenv("KAFKA_HOURLY_TOPIC")
-    daily_topic = os.getenv("KAFKA_DAILY_TOPIC")
+# Sample usage
+# if __name__ == "__main__":
+#     kafka_broker = os.getenv("KAFKA_BROKER") 
+#     hourly_topic = os.getenv("KAFKA_HOURLY_TOPIC")
+#     daily_topic = os.getenv("KAFKA_DAILY_TOPIC")
 
-    hourly_filename = "hourly_weather_data.json"
-    daily_filename = "daily_weather_data.json"
+#     hourly_filename = "hourly_weather_data.json"
+#     daily_filename = "daily_weather_data.json"
 
-    consumer = WeatherDataConsumer(kafka_broker, hourly_topic, daily_topic, hourly_filename, daily_filename)
-    consumer.receive_weather_data()
-    consumer.close()
+#     consumer = WeatherDataConsumer(kafka_broker, hourly_topic, daily_topic, hourly_filename, daily_filename)
+#     consumer.receive_weather_data()
+#     consumer.close()

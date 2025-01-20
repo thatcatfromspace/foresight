@@ -9,9 +9,9 @@ import os
 import threading
 import logging
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S", handlers=[logging.FileHandler("app.log"), logging.StreamHandler()])
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S", handlers=[logging.FileHandler("app.log")])
 
-load_dotenv()
+load_dotenv(override=True)
 
 kafka_broker = os.getenv("KAFKA_BROKER")
 hourly_topic = os.getenv("KAFKA_HOURLY_TOPIC")
@@ -64,18 +64,21 @@ if __name__ == "__main__":
     keyspace = os.getenv("CASSANDRA_KEYSPACE", "foresight_keyspace")
     cassandra_client = CassandraClient(contact_points, port, username, password, keyspace)
 
+    # Apply transformations - lag features, cyclic encoding
     daily_transform = DailyTransform('daily_weather_data.json')
     daily_data = daily_transform.daily_transformed_data()
     
     hourly_transform = HourlyTransform('hourly_weather_data.json')
     hourly_data = hourly_transform.hourly_transformed_data()
 
+    # Store data in DB
     for record in daily_data:
         cassandra_client.insert_daily_data('daily_weather_data', record)
 
     for record in hourly_data:
         cassandra_client.insert_hourly_data('hourly_weather_data', record)
 
+    # Retrieve data from DB
     hourly_records = cassandra_client.retrieve_data('hourly_weather_data')
 
     daily_records = cassandra_client.retrieve_data('daily_weather_data')

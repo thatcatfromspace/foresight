@@ -113,17 +113,19 @@ class WeatherDataProducer:
     def close(self):
         """Close the Kafka producer."""
         self.producer.close()
+        logging.info("Kafka producer closed.")
 
-if __name__ == "__main__":
-    kafka_broker = os.getenv("KAFKA_BROKER") 
-    hourly_topic = os.getenv("KAFKA_HOURLY_TOPIC")
-    daily_topic = os.getenv("KAFKA_DAILY_TOPIC")
+# Sample usage
+# if __name__ == "__main__":
+#     kafka_broker = os.getenv("KAFKA_BROKER") 
+#     hourly_topic = os.getenv("KAFKA_HOURLY_TOPIC")
+#     daily_topic = os.getenv("KAFKA_DAILY_TOPIC")
 
-    latitude = 37.7749  
-    longitude = -122.4194
-    start_date = "2022-01-01"
-    end_date = "2022-01-07"
+#     latitude = 37.7749  
+#     longitude = -122.4194
+#     start_date = "2022-01-01"
+#     end_date = "2022-01-07"
 
-    producer = WeatherDataProducer(kafka_broker, hourly_topic, daily_topic)
-    producer.send_weather_data(latitude, longitude, start_date, end_date)
-    producer.close()
+#     producer = WeatherDataProducer(kafka_broker, hourly_topic, daily_topic)
+#     producer.send_weather_data(latitude, longitude, start_date, end_date)
+#     producer.close()

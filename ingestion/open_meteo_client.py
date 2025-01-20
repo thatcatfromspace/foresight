@@ -18,8 +18,8 @@ class OpenMeteoClient:
         """
         self.hourly = HourlyHistorical()
         self.daily = DailyHistorical()
-        self.options = HistoricalOptions(latitude=latitude, longitude=longitude, start_date=start_date, end_date=end_date)
-
+        self.options = HistoricalOptions(latitude=latitude, longitude=longitude, start_date=start_date, end_date=end_date, timezone="Asia/Kolkata")
+        
     def config_daily_params(self, daily_params: DailyHistorical) -> None:
         self.daily = daily_params
 
