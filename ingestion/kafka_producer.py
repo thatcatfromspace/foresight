@@ -3,7 +3,6 @@ from ingestion.open_meteo_client import OpenMeteoClient
 import json
 from openmeteopy.hourly import HourlyHistorical
 from openmeteopy.daily import DailyHistorical
-import os
 import logging
 
 class WeatherDataProducer:
@@ -117,9 +116,9 @@ class WeatherDataProducer:
 
 # Sample usage
 # if __name__ == "__main__":
-#     kafka_broker = os.getenv("KAFKA_BROKER") 
-#     hourly_topic = os.getenv("KAFKA_HOURLY_TOPIC")
-#     daily_topic = os.getenv("KAFKA_DAILY_TOPIC")
+#     kafka_broker = os.getenv("KAFKA_BROKER", "localhost:9092") 
+#     hourly_topic = os.getenv("KAFKA_HOURLY_TOPIC", "hourly_weather_data")
+#     daily_topic = os.getenv("KAFKA_DAILY_TOPIC", "daily_weather_data")
 
 #     latitude = 37.7749  
 #     longitude = -122.4194

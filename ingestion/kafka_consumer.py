@@ -1,6 +1,5 @@
 from kafka import KafkaConsumer
 import json
-import os
 import logging
 
 class WeatherDataConsumer:
@@ -92,9 +91,9 @@ class WeatherDataConsumer:
 
 # Sample usage
 # if __name__ == "__main__":
-#     kafka_broker = os.getenv("KAFKA_BROKER") 
-#     hourly_topic = os.getenv("KAFKA_HOURLY_TOPIC")
-#     daily_topic = os.getenv("KAFKA_DAILY_TOPIC")
+#     kafka_broker = os.getenv("KAFKA_BROKER", "localhost:9092") 
+#     hourly_topic = os.getenv("KAFKA_HOURLY_TOPIC", "hourly_weather_data")
+#     daily_topic = os.getenv("KAFKA_DAILY_TOPIC", "daily_weather_data")
 
 #     hourly_filename = "hourly_weather_data.json"
 #     daily_filename = "daily_weather_data.json"
