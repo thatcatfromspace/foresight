@@ -9,6 +9,8 @@ import os
 import threading
 import logging
 
+from models.gbm import LightGBMModel
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S", handlers=[logging.FileHandler("app.log"), logging.StreamHandler()])
 
 load_dotenv(override=True)
@@ -72,15 +74,18 @@ if __name__ == "__main__":
     hourly_data = hourly_transform.hourly_transformed_data()
 
     # Store data in DB
+
     for record in daily_data:
         cassandra_client.insert_daily_data('daily_weather_data', record)
 
     for record in hourly_data:
         cassandra_client.insert_hourly_data('hourly_weather_data', record)
 
-    # Retrieve data from DB
-    hourly_records = cassandra_client.retrieve_data('hourly_weather_data')
+    #Retrieve data from DB
+    hourly_records = cassandra_client.retrieve_data('hourly_weather_data',43705)
+    daily_records = cassandra_client.retrieve_data('daily_weather_data',1818)
 
-    daily_records = cassandra_client.retrieve_data('daily_weather_data')
+    model = LightGBMModel()
+    model.model_building(hourly_records, daily_records)
 
     cassandra_client.close()
