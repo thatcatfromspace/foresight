@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
 class Transformation:
@@ -10,8 +11,7 @@ class Transformation:
         Adds cyclic encoding (sin and cos transformations) for specified features.
 
         Args:
-        features_cycle : list of dicts
-            A list of dictionaries where each dictionary has 'feature' as the key 
+        features_cycle (list of dicts): A list of dictionaries where each dictionary has 'feature' as the key 
             and 'cycle' (max value for the feature) as the value.
 
         Returns:
@@ -29,8 +29,7 @@ class Transformation:
         Standardizes the specified features by year.
         
         Args:
-        features : list
-            A list of feature names to standardize.
+        features (list): A list of feature names to standardize.
 
         Returns:
         DataFrame : The DataFrame with standardized features.
@@ -44,8 +43,7 @@ class Transformation:
         Applies log transformation to the precipitation feature.
         
         Args:
-        feature : str
-            The name of the feature to apply log transformation to.
+        feature (str):The name of the feature to apply log transformation to.
         
         Returns:
         DataFrame : The DataFrame with the transformed feature.
@@ -58,8 +56,7 @@ class Transformation:
         Normalizes the specified features to a range between 0 and 1.
         
         Args:
-        features : list
-            A list of feature names to normalize.
+        features (list): A list of feature names to normalize.
 
         Returns:
         DataFrame : The DataFrame with normalized features.
@@ -75,12 +72,9 @@ class Transformation:
         Adds lag features for specified columns at given lag intervals.
 
         Args:
-        columns_to_lag : list
-            List of column names to apply lag features.
-        lag_period : list
-            List of lag intervals (in hours or days).
-        timestamp : str
-        The name of the column containing the timestamp. To ensure the lag values are calculated in chronological order.
+        columns_to_lag (list): List of column names to apply lag features.
+        lag_period (list): List of lag intervals (in hours or days).
+        timestamp (str): The name of the column containing the timestamp. To ensure the lag values are calculated in chronological order.
 
         Returns:
         DataFrame : The DataFrame with lag features added.
@@ -94,15 +88,50 @@ class Transformation:
         self.df.dropna(inplace=True)  # Drop rows with NaN values created by lagging
         return self.df
 
+    def fill_missing_features(self, historic_data, columns_to_lag, lag_period, timestamp):
+        """
+        Fills missing feature values by looking up lagged data from a historical dataset.
+
+        Args:
+            historic_data (pd.DataFrame): Historical data with 'timestamp' and feature columns.
+            columns_to_lag (list of str): Features to fill with lagged values.
+            lag_period (list of int): Lag periods (in hours) to search for missing values.
+            timestamp (str or pd.Timestamp): Timestamp for which missing values should be filled.
+
+        Returns:
+            pd.DataFrame: DataFrame with filled values.
+            list: Features that could not be filled due to missing lagged values.
+        """
+        null_features=[]
+        timestamp = pd.Timestamp(timestamp).tz_localize('UTC')
+        historic_data['timestamp'] = pd.to_datetime(historic_data['timestamp'], utc=True)
+        for feature in columns_to_lag:
+            found = False
+            for lag in lag_period:
+            
+                # Calculate the lagged timestamp
+                lagged_time = timestamp - pd.Timedelta(hours=lag)
+
+                # Find the lagged value from the dataset
+                lagged_value = historic_data.loc[historic_data['timestamp'] == lagged_time, feature]
+
+                if not lagged_value.empty:
+                    self.df[feature] = lagged_value.values[0]
+                    found = True
+                    break
+
+            if not found:
+                null_features.append(feature)
+
+        return self.df, null_features
+
     def add_rolling_mean(self, features, window=6):
         """
         Applies a rolling mean to the specified features.
 
         Args:
-        features : list
-            List of feature names to apply the rolling mean.
-        window : int
-            The window size for the rolling mean (default is 6 hours).
+        features (list): List of feature names to apply the rolling mean.
+        window (int): The window size for the rolling mean (default is 6 hours).
 
         Returns:
         DataFrame : The DataFrame with rolling mean features added.

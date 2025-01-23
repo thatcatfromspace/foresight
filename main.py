@@ -3,6 +3,7 @@ from ingestion.kafka_consumer import WeatherDataConsumer
 from storage.cassandra_client import CassandraClient
 from transformations.daily_transform import DailyTransform
 from transformations.hourly_transform import HourlyTransform
+from prediction.weather_prediction import WeatherPrediction
 
 from dotenv import load_dotenv
 import os
@@ -82,10 +83,15 @@ if __name__ == "__main__":
         cassandra_client.insert_hourly_data('hourly_weather_data', record)
 
     #Retrieve data from DB
-    hourly_records = cassandra_client.retrieve_data('hourly_weather_data',43705)
-    daily_records = cassandra_client.retrieve_data('daily_weather_data',1818)
+    hourly_records = cassandra_client.retrieve_data('hourly_weather_data',52417)
+    daily_records = cassandra_client.retrieve_data('daily_weather_data',2180)
 
-    model = LightGBMModel()
-    model.model_building(hourly_records, daily_records)
+    # Train Model
+    # model = LightGBMModel()
+    # model.model_building(hourly_records, daily_records)
+
+    # Make Prediction
+    make_prediction=WeatherPrediction()
+    make_prediction.make_prediction(hourly_records, daily_records)
 
     cassandra_client.close()
