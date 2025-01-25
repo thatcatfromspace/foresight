@@ -11,7 +11,6 @@ We need `Kafka` to process data and `Cassandra` as the database. Both of them ar
 To run a local Kafka server, make sure you have Docker installed, and then run the command.
 
 ```bash
-cd kafka
 docker compose up -d
 ```
 
