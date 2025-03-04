@@ -14,3 +14,5 @@ app.log
 
 hourly_weather_data.json
 daily_weather_data.json
+
+models/models
