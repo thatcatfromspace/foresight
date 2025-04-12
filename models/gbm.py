@@ -13,15 +13,36 @@ class DataMerger:
     """
     def __init__(self, hourly_records, daily_records):
         """
-        Initializes the DataMerger class with paths to hourly and daily record files.
+        Initializes the DataMerger class with hourly and daily records.
 
         Args:
-            hourly_records (str): Path to hourly records JSON file.
-            daily_records (str): Path to daily records JSON file.
+            hourly_records: List of dictionaries, JSON string, or DataFrame.
+            daily_records: List of dictionaries, JSON string, or DataFrame.
         """
-        self.hourly_data = pd.read_json(hourly_records, orient='records')
-        self.daily_data = pd.read_json(daily_records, orient='records')
-        self.merged_data=pd.DataFrame()
+        # Handle different input types
+        if isinstance(hourly_records, pd.DataFrame):
+            self.hourly_data = hourly_records
+        elif isinstance(hourly_records, (list, dict)):
+            self.hourly_data = pd.DataFrame(hourly_records)
+        elif isinstance(hourly_records, str):
+            self.hourly_data = pd.read_json(hourly_records, orient='records')
+        else:
+            raise TypeError(f"Unsupported hourly_records type: {type(hourly_records)}")
+        
+        if isinstance(daily_records, pd.DataFrame):
+            self.daily_data = daily_records
+        elif isinstance(daily_records, (list, dict)):
+            self.daily_data = pd.DataFrame(daily_records)
+        elif isinstance(daily_records, str):
+            self.daily_data = pd.read_json(daily_records, orient='records')
+        else:
+            raise TypeError(f"Unsupported daily_records type: {type(daily_records)}")
+        
+        # Normalize column names
+        self.hourly_data.columns = [str(col).split(':')[-1].strip('"') for col in self.hourly_data.columns]
+        self.daily_data.columns = [str(col).split(':')[-1].strip('"') for col in self.daily_data.columns]
+        
+        self.merged_data = pd.DataFrame()
 
     def merge_data(self):
         """
@@ -34,15 +55,16 @@ class DataMerger:
         self.hourly_data['date'] = pd.to_datetime(self.hourly_data['timestamp']).dt.date
         self.daily_data['date'] = pd.to_datetime(self.daily_data['date']).dt.date
 
+        # Drop optional columns if present
+        columns_to_drop = ['year', 'day_of_year', 'day_of_year_cos', 'day_of_year_sin']
+        self.daily_data = self.daily_data.drop(columns=[col for col in columns_to_drop if col in self.daily_data.columns])
+        
         # Merge the hourly data with daily data
-        self.daily_data = self.daily_data.drop(columns=['year', 'day_of_year', 'day_of_year_cos', 'day_of_year_sin'])
         self.merged_data = pd.merge(self.hourly_data, self.daily_data, on='date', how='left')
         
         self.merged_data.fillna(method='ffill', inplace=True)
         self.merged_data.sort_values(by='timestamp', inplace=True)
         
-        #self.merged_data.to_csv('merged_data.csv', index=False)
-
         return self.merged_data
     
     
@@ -101,8 +123,8 @@ class LightGBMModel:
         self.data = self.data.sort_values(by='date')
 
         # Split into train, validation and test sets
-        train_end_date = '2021-12-31'  
-        val_end_date = '2022-12-31'    
+        train_end_date = '2022-12-31'  
+        val_end_date = '2024-12-31'    
 
         train_data = self.data[self.data['date'] <= train_end_date]
         val_data = self.data[(self.data['date'] > train_end_date) & (self.data['date'] <= val_end_date)]
